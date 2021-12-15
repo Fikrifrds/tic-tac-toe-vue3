@@ -7,7 +7,7 @@
   </div>
   <p class="turn" v-else><span class="bold">{{ state.turn }}</span> turn</p>
   <div class="board" :class="{disabled: state.winner}">
-    <div @click="clickTile(item)" class="tile" v-for="item in 9" :key="item">
+    <div @click="clickTile(item)" class="tile" :class="{'win-tile': state.winningLine.includes(item)}" v-for="item in 9" :key="item">
       <span class="fill">{{ state.fill[item] ? state.fill[item] : '' }}</span>
     </div>
   </div>
@@ -27,15 +27,16 @@ const state = reactive({
   winner: null,
   checker: {},
   move: 0,
+  winningLine: '',
 })
 
 const clickTile = (item) => {
   if (state.fill[item]) return;
   if (state.winner) return; 
-  findWinner(item)
+  state.move++;
+  findWinner(item);
   state.fill[item]=state.turn;
   state.turn = state.turn === 'X' ? 'O' : 'X';
-  state.move++;
 }
 
 const initGame = () => {
@@ -50,6 +51,7 @@ const restartGame = () => {
   state.winner = null
   state.checker = {}
   state.move = 0
+  state.winningLine = '';
   initGame()
 }
 
@@ -61,10 +63,11 @@ const findWinner = (item) => {
     possibleLine[index] = state.turn;
     const winScenario = [state.turn, state.turn, state.turn];
     if (JSON.stringify(possibleLine) === JSON.stringify(winScenario)) {
+      state.winningLine = line;
       return state.winner = state.turn;
     }
   }
-  if (state.move === 8) {
+  if (state.move === 9) {
     state.winner = 'Draw'
   }
 }
@@ -110,6 +113,10 @@ button {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.win-tile {
+  background-color: lightgreen;
 }
 
 .fill, .winner {
